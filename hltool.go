@@ -24,6 +24,18 @@ func IsNumber(input string) bool {
 	return false
 }
 
+// CurrentUser 获取当前SSH连接的用户
+func CurrentUser() string {
+	currentUser, _ := user.Current()
+	return currentUser.Username
+}
+
+// CurrentDir 获取当前路径
+func CurrentDir() string {
+	currentDir, _ := os.Getwd()
+	return currentDir
+}
+
 // UserHome 获取用户的家目录
 func UserHome() (string, error) {
 	currentUser, err := user.Current()
