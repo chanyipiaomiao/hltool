@@ -51,11 +51,10 @@ func UserHome() (string, error) {
 }
 
 // IsExist 文件或目录是否存在
+// return false 表示文件不存在
 func IsExist(name string) bool {
-	if _, err := os.Stat(name); os.IsExist(err) {
-		return false
-	}
-	return true
+	_, err := os.Stat(name)
+	return err == nil || os.IsExist(err)
 }
 
 // CheckError 错误检查
