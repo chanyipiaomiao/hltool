@@ -7,6 +7,8 @@ import (
 	"os/user"
 	"regexp"
 	"time"
+
+	"golang.org/x/crypto/scrypt"
 )
 
 // GetNowTime 获取当前时间
@@ -62,4 +64,10 @@ func CheckError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s error: %v", msg, err)
 	}
+}
+
+// CryptPassword 加密密码
+func CryptPassword(password, salt string) string {
+	dk, _ := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, 32)
+	return fmt.Sprintf("%x", dk)
 }
