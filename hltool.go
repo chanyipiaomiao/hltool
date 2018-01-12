@@ -19,6 +19,12 @@ func GetNowTime() string {
 	return fmt.Sprintf("%d%d%d%d%d%d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 }
 
+// GetNowTime2 获取当前时间
+func GetNowTime2() string {
+	t := time.Now()
+	return fmt.Sprintf("%d-%d-%d %d:%d:%d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+}
+
 // IsNumber 检查输入的字符串是否匹配数字
 func IsNumber(input string) bool {
 
