@@ -15,14 +15,17 @@ import (
 
 // GetNowTime 获取当前时间
 func GetNowTime() string {
-	t := time.Now()
-	return fmt.Sprintf("%d%d%d%d%d%d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+	return time.Now().Format("20060102150405")
 }
 
 // GetNowTime2 获取当前时间
 func GetNowTime2() string {
-	t := time.Now()
-	return fmt.Sprintf("%d-%d-%d %d:%d:%d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+// GetNowTimeStamp 获取当前的时间戳
+func GetNowTimeStamp() int64{ 
+	return time.Now().Unix()
 }
 
 // IsNumber 检查输入的字符串是否匹配数字
