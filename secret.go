@@ -10,8 +10,16 @@ import (
 )
 
 // GetRandomString 生成随机字符串
-func GetRandomString(length int) string{
+// length 长度
+// specialchar 是否包含特殊字符
+func GetRandomString(length int, specialchar string) string{
 	str := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	special := "!@#%$*.="
+
+	if specialchar == "yes" {
+		str = str + special
+	}
+
 	bytes := []byte(str)
 	result := []byte{}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
