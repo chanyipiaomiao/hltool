@@ -4,8 +4,8 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-// Message 内容
-type Message struct {
+// EmailMessage 内容
+type EmailMessage struct {
 	From 		string
 	To 			[]string
 	Cc  		[]string
@@ -15,15 +15,15 @@ type Message struct {
 	Attach 		string
 }
 
-// NewMessage 返回消息对象
+// NewEmailMessage 返回消息对象
 // from: 发件人
 // subject: 标题
 // contentType: 内容的类型 text/plain text/html
 // attach: 附件
 // to: 收件人
 // cc: 抄送人
-func NewMessage(from, subject, contentType, content, attach string, to, cc []string) *Message{
-	return &Message{
+func NewEmailMessage(from, subject, contentType, content, attach string, to, cc []string) *EmailMessage{
+	return &EmailMessage{
 		From: from,
 		Subject: subject,
 		ContentType: contentType,
@@ -34,45 +34,47 @@ func NewMessage(from, subject, contentType, content, attach string, to, cc []str
 	}
 }
 
-// Client 发送客户端
-type Client struct {
+// EmailClient 发送客户端
+type EmailClient struct {
 	Host 	string
 	Port	int
 	Username string
 	Password string
+	Message *EmailMessage
 }
 
-// NewClient 返回一个邮件客户端 
+// NewEmailClient 返回一个邮件客户端 
 // host smtp地址
 // username 用户名
 // password 密码
 // port 端口
-func NewClient(host, username, password string, port int) *Client{
-	return &Client{
+func NewEmailClient(host, username, password string, port int, message *EmailMessage) *EmailClient{
+	return &EmailClient{
 		Host: host,
 		Port: port,
 		Username: username,
 		Password: password,
+		Message: message,
 	}
 }
 
-// Send 发送邮件
-func (c *Client) Send(m *Message) (bool, error) {
+// SendMessage 发送邮件
+func (c *EmailClient) SendMessage() (bool, error) {
 
 	e := gomail.NewDialer(c.Host, c.Port, c.Username, c.Password)
 	dm := gomail.NewMessage()
-	dm.SetHeader("From", m.From)
-	dm.SetHeader("To", m.To...)
+	dm.SetHeader("From", c.Message.From)
+	dm.SetHeader("To", c.Message.To...)
 
-	if len(m.Cc) != 0 {
-		dm.SetHeader("Cc", m.Cc...)
+	if len(c.Message.Cc) != 0 {
+		dm.SetHeader("Cc", c.Message.Cc...)
 	}
 
-	dm.SetHeader("Subject", m.Subject)
-	dm.SetBody(m.ContentType, m.Content)
+	dm.SetHeader("Subject", c.Message.Subject)
+	dm.SetBody(c.Message.ContentType, c.Message.Content)
 
-	if m.Attach != "" {
-		dm.Attach(m.Attach)
+	if c.Message.Attach != "" {
+		dm.Attach(c.Message.Attach)
 	}
 	
 	if err := e.DialAndSend(dm); err != nil {
