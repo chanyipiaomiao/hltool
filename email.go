@@ -2,6 +2,7 @@ package hltool
 
 import (
 	"gopkg.in/gomail.v2"
+	"crypto/tls"
 )
 
 // EmailMessage 内容
@@ -62,6 +63,9 @@ func NewEmailClient(host, username, password string, port int, message *EmailMes
 func (c *EmailClient) SendMessage() (bool, error) {
 
 	e := gomail.NewDialer(c.Host, c.Port, c.Username, c.Password)
+	if 587 == c.Port {
+		e.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	}
 	dm := gomail.NewMessage()
 	dm.SetHeader("From", c.Message.From)
 	dm.SetHeader("To", c.Message.To...)
