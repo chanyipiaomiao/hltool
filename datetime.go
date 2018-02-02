@@ -2,6 +2,11 @@ package hltool
 
 import "time"
 
+const (
+	// Oneday 一天
+	Oneday = 24 * time.Hour
+)
+
 // GetNowTime 获取当前时间
 func GetNowTime() string {
 	return time.Now().Format("20060102150405")
@@ -13,6 +18,6 @@ func GetNowTime2() string {
 }
 
 // GetNowTimeStamp 获取当前的时间戳
-func GetNowTimeStamp() int64{ 
+func GetNowTimeStamp() int64 {
 	return time.Now().Unix()
 }
