@@ -13,8 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// HLogger 定义
-type HLogger struct {
+// HLog 定义
+type HLog struct {
 	LogPath      string
 	FileName     string
 	LogType      string
@@ -23,9 +23,9 @@ type HLogger struct {
 	RotationTime time.Duration
 }
 
-// NewHLogger 返回HLogger对象
-func NewHLogger(logpath, filename, logType string) *HLogger {
-	return &HLogger{
+// NewHLog 返回HLog对象
+func NewHLog(logpath, filename, logType string) *HLog {
+	return &HLog{
 		LogPath:      logpath,
 		FileName:     filename,
 		LogType:      logType,
@@ -36,24 +36,24 @@ func NewHLogger(logpath, filename, logType string) *HLogger {
 }
 
 // SetLogType 设置日志格式 json|text
-func (hl *HLogger) SetLogType(logType string) {
+func (hl *HLog) SetLogType(logType string) {
 	hl.LogType = logType
 }
 
 // SetMaxAge 设置最大保留时间
 // 单位: 天
-func (hl *HLogger) SetMaxAge(day time.Duration) {
+func (hl *HLog) SetMaxAge(day time.Duration) {
 	hl.MaxAge = day * Oneday
 }
 
 // SetRotationTime 设置日志多久轮转一次
 // 单位: 天
-func (hl *HLogger) SetRotationTime(day time.Duration) {
+func (hl *HLog) SetRotationTime(day time.Duration) {
 	hl.RotationTime = day * Oneday
 }
 
 // SetLevel 设置log level
-func (hl *HLogger) SetLevel(level string) {
+func (hl *HLog) SetLevel(level string) {
 	switch strings.ToLower(level) {
 	case "panic":
 		hl.LogLevel = log.PanicLevel
@@ -79,7 +79,7 @@ func setNull() *bufio.Writer {
 }
 
 // GetLogger getlogger
-func (hl *HLogger) GetLogger() *log.Logger {
+func (hl *HLog) GetLogger() *log.Logger {
 
 	logger := log.New()
 
