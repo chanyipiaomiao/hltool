@@ -18,6 +18,7 @@ type HLog struct {
 	LogPath      string
 	FileName     string
 	LogType      string
+	DateFormat   string
 	LogLevel     log.Level
 	MaxAge       time.Duration
 	RotationTime time.Duration
@@ -29,7 +30,8 @@ func NewHLog(logpath, filename, logType string) *HLog {
 		LogPath:      logpath,
 		FileName:     filename,
 		LogType:      logType,
-		LogLevel:     log.DebugLevel,
+		LogLevel:     log.InfoLevel,
+		DateFormat:   "%Y-%m-%d",
 		MaxAge:       15 * Oneday, // 默认保留15天日志
 		RotationTime: Oneday,      // 默认24小时轮转一次日志
 	}
@@ -53,6 +55,7 @@ func (hl *HLog) SetRotationTime(day time.Duration) {
 }
 
 // SetLevel 设置log level
+// debug|info|warn|error|fatal|panic
 func (hl *HLog) SetLevel(level string) {
 	switch strings.ToLower(level) {
 	case "panic":
@@ -70,6 +73,13 @@ func (hl *HLog) SetLevel(level string) {
 	}
 }
 
+// SetDateFormat 设置日期格式
+// format "%Y-%m-%d" | "%Y%m%d"
+func (hl *HLog) SetDateFormat(format string) {
+	hl.DateFormat = format
+}
+
+// setNull 相当于/dev/null
 func setNull() *bufio.Writer {
 	src, err := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
@@ -98,7 +108,7 @@ func (hl *HLog) GetLogger() *log.Logger {
 
 	debugFileName := filename + ".debug"
 	debugWriter, err := rotatelogs.New(
-		debugFileName+".%Y-%m-%d",
+		fmt.Sprintf("%s.%s", debugFileName, hl.DateFormat),
 		rotatelogs.WithLinkName(debugFileName),
 		maxage,
 		rotate,
@@ -106,7 +116,7 @@ func (hl *HLog) GetLogger() *log.Logger {
 
 	infoFileName := filename + ".info"
 	infoWriter, err := rotatelogs.New(
-		infoFileName+".%Y-%m-%d",
+		fmt.Sprintf("%s.%s", infoFileName, hl.DateFormat),
 		rotatelogs.WithLinkName(infoFileName),
 		maxage,
 		rotate,
@@ -114,7 +124,7 @@ func (hl *HLog) GetLogger() *log.Logger {
 
 	warningFileName := filename + ".warn"
 	warningWriter, err := rotatelogs.New(
-		warningFileName+".%Y-%m-%d",
+		fmt.Sprintf("%s.%s", warningFileName, hl.DateFormat),
 		rotatelogs.WithLinkName(warningFileName),
 		maxage,
 		rotate,
@@ -122,7 +132,7 @@ func (hl *HLog) GetLogger() *log.Logger {
 
 	errorFileName := filename + ".error"
 	errorWriter, err := rotatelogs.New(
-		errorFileName+".%Y-%m-%d",
+		fmt.Sprintf("%s.%s", errorFileName, hl.DateFormat),
 		rotatelogs.WithLinkName(errorFileName),
 		maxage,
 		rotate,
@@ -143,7 +153,7 @@ func (hl *HLog) GetLogger() *log.Logger {
 
 	logger.Hooks.Add(fileHook)
 
-	if logger.Level.String() != "debug" {
+	if hl.LogLevel != log.DebugLevel {
 		logger.Out = setNull()
 	}
 
