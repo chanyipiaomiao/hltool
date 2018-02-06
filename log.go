@@ -34,9 +34,6 @@ type HLog struct {
 	// 是否分离不同级别的日志 默认: true
 	IsSeparateLevelLog bool
 
-	// 日志条目中的公共字段
-	CommonFields map[string]interface{}
-
 	// 日志级别 默认: log.InfoLevel
 	LogLevel log.Level
 
@@ -110,11 +107,6 @@ func (hl *HLog) SetDateFormat(format string) {
 	hl.FileNameDateFormat = format
 }
 
-// SetCommonFields 设置公共字段
-func (hl *HLog) SetCommonFields(fields map[string]interface{}) {
-	hl.CommonFields = fields
-}
-
 // SetSeparateLevelLog 设置是否分离不同级别的日志到不同的文件
 func (hl *HLog) SetSeparateLevelLog(yes bool) {
 	hl.IsSeparateLevelLog = yes
@@ -129,8 +121,13 @@ func setNull() *bufio.Writer {
 	return bufio.NewWriter(src)
 }
 
+// GetLogField 返回log.Fields
+func (hl *HLog) GetLogField(fields map[string]interface{}) log.Fields {
+	return log.Fields(fields)
+}
+
 // GetLogger getlogger
-func (hl *HLog) GetLogger() (*log.Entry, error) {
+func (hl *HLog) GetLogger() (*log.Logger, error) {
 
 	logger := log.New()
 
@@ -235,8 +232,6 @@ func (hl *HLog) GetLogger() (*log.Entry, error) {
 		}
 	}
 
-	loggerEntry := logger.WithFields(log.Fields(hl.CommonFields))
-
-	return loggerEntry, nil
+	return logger, nil
 
 }

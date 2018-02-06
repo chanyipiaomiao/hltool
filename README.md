@@ -16,28 +16,47 @@ go get gopkg.in/gomail.v2
 ```go
 
 import (
+	"github.com/chanyipiaomiao/hltool"
+)
+
+func main() {
+	hlog, _ := hltool.NewHLog("./", "test.log")
+	logger, _ := hlog.GetLogger()
+	contextLogger := logger.WithFields(hlog.GetLogField(map[string]interface{}{
+		"username": "admin",
+	}))
+	contextLogger.Info("测试代码")
+	contextLogger.Error("测试代码")
+}
+```
+日志文件内容:
+```shell
+{"level":"info","msg":"测试代码","time":"2018-02-06 21:42:13","username":"admin"}
+{"level":"error","msg":"测试代码","time":"2018-02-06 21:42:13","username":"admin"}
+```
+
+# DB 示例
+```go
+import (
 	"log"
 
 	"github.com/chanyipiaomiao/hltool"
 )
 
 func main() {
-	hlog, err := hltool.NewHLog("./log", "test.log")
+	db, err := hltool.NewBoltDB("./data/app.db", "token")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
-	hlog.SetCommonFields(map[string]interface{}{
-		"haha":  "这是公共字段",
-		"stime": hltool.GetNowTime2(),
+	db.Set(map[string][]byte{
+		"hello": []byte("world"),
+		"go":    []byte("golang"),
 	})
-	logger, err := hlog.GetLogger()
+	r, err := db.Get([]string{"hello", "go"})
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
-	logger.Info("测试一下")
-	logger.Warn("测试一下")
-	logger.Error("测试一下")
-
+	log.Println(r)
 }
 
 ```
