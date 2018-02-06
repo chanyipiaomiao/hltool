@@ -22,11 +22,14 @@ type HLog struct {
 	// log文件名称
 	FileName string
 
-	// 日志类型  json|text
+	// 日志类型  json|text 默认: json
 	LogType string
 
 	// 文件名的日期格式 默认: %Y-%m-%d|%Y%m%d
 	FileNameDateFormat string
+
+	// 日志中日期时间格式 默认: 2006-01-02 15:04:05
+	TimestampFormat string
 
 	// 是否分离不同级别的日志 默认: true
 	IsSeparateLevelLog bool
@@ -58,6 +61,7 @@ func NewHLog(logpath, filename string) (*HLog, error) {
 		LogType:            "json",
 		LogLevel:           log.InfoLevel,
 		FileNameDateFormat: "%Y-%m-%d",
+		TimestampFormat:    "2006-01-02 15:04:05",
 		IsSeparateLevelLog: true,
 		MaxAge:             15 * Oneday,
 		RotationTime:       Oneday,
@@ -132,9 +136,9 @@ func (hl *HLog) GetLogger() (*log.Entry, error) {
 
 	switch hl.LogType {
 	case "text":
-		logger.Formatter = &log.TextFormatter{}
+		logger.Formatter = &log.TextFormatter{TimestampFormat: hl.TimestampFormat}
 	default:
-		logger.Formatter = &log.JSONFormatter{}
+		logger.Formatter = &log.JSONFormatter{TimestampFormat: hl.TimestampFormat}
 	}
 
 	logger.Level = hl.LogLevel
