@@ -15,26 +15,53 @@ import (
 
 // HLog 定义
 type HLog struct {
-	LogPath      string
-	FileName     string
-	LogType      string
-	DateFormat   string
-	LogLevel     log.Level
-	MaxAge       time.Duration
+
+	// log 路径
+	LogPath string
+
+	// log文件名称
+	FileName string
+
+	// 日志类型  json|text
+	LogType string
+
+	// 文件名的日期格式 默认: %Y-%m-%d|%Y%m%d
+	FileNameDateFormat string
+
+	// 是否分离不同级别的日志 默认: true
+	IsSeparateLevelLog bool
+
+	// 日志条目中的公共字段
+	CommonFields map[string]interface{}
+
+	// 日志级别 默认: log.InfoLevel
+	LogLevel log.Level
+
+	// 日志最长保存多久 默认: 15天
+	MaxAge time.Duration
+
+	// 日志默认多长时间轮转一次 默认: 24小时
 	RotationTime time.Duration
 }
 
-// NewHLog 返回HLog对象
-func NewHLog(logpath, filename, logType string) *HLog {
-	return &HLog{
-		LogPath:      logpath,
-		FileName:     filename,
-		LogType:      logType,
-		LogLevel:     log.InfoLevel,
-		DateFormat:   "%Y-%m-%d",
-		MaxAge:       15 * Oneday, // 默认保留15天日志
-		RotationTime: Oneday,      // 默认24小时轮转一次日志
+// NewHLog 返回HLog对象 和 error 目录创建失败
+func NewHLog(logpath, filename string) (*HLog, error) {
+	if !IsExist(logpath) {
+		err := os.MkdirAll(logpath, os.ModePerm)
+		if err != nil {
+			return nil, fmt.Errorf("create <%s> error: %s", logpath, err)
+		}
 	}
+	return &HLog{
+		LogPath:            logpath,
+		FileName:           filename,
+		LogType:            "json",
+		LogLevel:           log.InfoLevel,
+		FileNameDateFormat: "%Y-%m-%d",
+		IsSeparateLevelLog: true,
+		MaxAge:             15 * Oneday,
+		RotationTime:       Oneday,
+	}, nil
 }
 
 // SetLogType 设置日志格式 json|text
@@ -76,20 +103,30 @@ func (hl *HLog) SetLevel(level string) {
 // SetDateFormat 设置日期格式
 // format "%Y-%m-%d" | "%Y%m%d"
 func (hl *HLog) SetDateFormat(format string) {
-	hl.DateFormat = format
+	hl.FileNameDateFormat = format
+}
+
+// SetCommonFields 设置公共字段
+func (hl *HLog) SetCommonFields(fields map[string]interface{}) {
+	hl.CommonFields = fields
+}
+
+// SetSeparateLevelLog 设置是否分离不同级别的日志到不同的文件
+func (hl *HLog) SetSeparateLevelLog(yes bool) {
+	hl.IsSeparateLevelLog = yes
 }
 
 // setNull 相当于/dev/null
 func setNull() *bufio.Writer {
 	src, err := os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
-		fmt.Println("err", err)
+		return nil
 	}
 	return bufio.NewWriter(src)
 }
 
 // GetLogger getlogger
-func (hl *HLog) GetLogger() *log.Logger {
+func (hl *HLog) GetLogger() (*log.Entry, error) {
 
 	logger := log.New()
 
@@ -106,57 +143,96 @@ func (hl *HLog) GetLogger() *log.Logger {
 	maxage := rotatelogs.WithMaxAge(hl.MaxAge)
 	rotate := rotatelogs.WithRotationTime(hl.RotationTime)
 
-	debugFileName := filename + ".debug"
-	debugWriter, err := rotatelogs.New(
-		fmt.Sprintf("%s.%s", debugFileName, hl.DateFormat),
-		rotatelogs.WithLinkName(debugFileName),
-		maxage,
-		rotate,
-	)
+	if hl.IsSeparateLevelLog {
+		debugFileName := filename + ".debug"
+		debugWriter, err := rotatelogs.New(
+			fmt.Sprintf("%s.%s", debugFileName, hl.FileNameDateFormat),
+			rotatelogs.WithLinkName(debugFileName),
+			maxage,
+			rotate,
+		)
+		if err != nil {
+			return nil, err
+		}
 
-	infoFileName := filename + ".info"
-	infoWriter, err := rotatelogs.New(
-		fmt.Sprintf("%s.%s", infoFileName, hl.DateFormat),
-		rotatelogs.WithLinkName(infoFileName),
-		maxage,
-		rotate,
-	)
+		infoFileName := filename + ".info"
+		infoWriter, err := rotatelogs.New(
+			fmt.Sprintf("%s.%s", infoFileName, hl.FileNameDateFormat),
+			rotatelogs.WithLinkName(infoFileName),
+			maxage,
+			rotate,
+		)
+		if err != nil {
+			return nil, err
+		}
 
-	warningFileName := filename + ".warn"
-	warningWriter, err := rotatelogs.New(
-		fmt.Sprintf("%s.%s", warningFileName, hl.DateFormat),
-		rotatelogs.WithLinkName(warningFileName),
-		maxage,
-		rotate,
-	)
+		warningFileName := filename + ".warn"
+		warningWriter, err := rotatelogs.New(
+			fmt.Sprintf("%s.%s", warningFileName, hl.FileNameDateFormat),
+			rotatelogs.WithLinkName(warningFileName),
+			maxage,
+			rotate,
+		)
+		if err != nil {
+			return nil, err
+		}
 
-	errorFileName := filename + ".error"
-	errorWriter, err := rotatelogs.New(
-		fmt.Sprintf("%s.%s", errorFileName, hl.DateFormat),
-		rotatelogs.WithLinkName(errorFileName),
-		maxage,
-		rotate,
-	)
+		errorFileName := filename + ".error"
+		errorWriter, err := rotatelogs.New(
+			fmt.Sprintf("%s.%s", errorFileName, hl.FileNameDateFormat),
+			rotatelogs.WithLinkName(errorFileName),
+			maxage,
+			rotate,
+		)
 
-	if err != nil {
-		panic("error")
+		if err != nil {
+			return nil, err
+		}
+
+		// 文件 hook, 不同的级别 设置输出不同的文件
+		fileHook := lfshook.NewHook(lfshook.WriterMap{
+			log.DebugLevel: debugWriter, // 为不同级别设置不同的输出目的
+			log.InfoLevel:  infoWriter,
+			log.WarnLevel:  warningWriter,
+			log.ErrorLevel: errorWriter,
+			log.FatalLevel: errorWriter,
+			log.PanicLevel: errorWriter,
+		}, logger.Formatter)
+
+		logger.Hooks.Add(fileHook)
+
+	} else {
+		writer, err := rotatelogs.New(
+			fmt.Sprintf("%s.%s", filename, hl.FileNameDateFormat),
+			maxage,
+			rotate,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		fileHook := lfshook.NewHook(lfshook.WriterMap{
+			log.DebugLevel: writer,
+			log.InfoLevel:  writer,
+			log.WarnLevel:  writer,
+			log.ErrorLevel: writer,
+			log.FatalLevel: writer,
+			log.PanicLevel: writer,
+		}, logger.Formatter)
+
+		logger.Hooks.Add(fileHook)
 	}
-
-	fileHook := lfshook.NewHook(lfshook.WriterMap{
-		log.DebugLevel: debugWriter, // 为不同级别设置不同的输出目的
-		log.InfoLevel:  infoWriter,
-		log.WarnLevel:  warningWriter,
-		log.ErrorLevel: errorWriter,
-		log.FatalLevel: errorWriter,
-		log.PanicLevel: errorWriter,
-	}, &log.JSONFormatter{})
-
-	logger.Hooks.Add(fileHook)
 
 	if hl.LogLevel != log.DebugLevel {
-		logger.Out = setNull()
+		if out := setNull(); out != nil {
+			logger.Out = setNull()
+		} else {
+			logger.Out = os.Stdout
+		}
 	}
 
-	return logger
+	loggerEntry := logger.WithFields(log.Fields(hl.CommonFields))
+
+	return loggerEntry, nil
 
 }
