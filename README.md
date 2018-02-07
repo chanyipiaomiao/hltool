@@ -12,6 +12,48 @@ go get github.com/rifflock/lfshook
 go get gopkg.in/gomail.v2
 ```
 
+# 发送钉钉通知 示例
+```go
+import (
+	"log"
+	"github.com/chanyipiaomiao/hltool"
+)
+
+dingtalk := hltool.NewDingTalkClient("钉钉机器URL", "消息内容", "text|markdown")
+ok, err := hltool.SendMessage(dingtalk)
+if err != nil {
+	log.Fatalf("发送钉钉通知失败了: %s", err)
+}
+
+```
+
+# 发送邮件 示例
+```go
+import (
+	"log"
+	"github.com/chanyipiaomiao/hltool"
+)
+
+username := "xxxx@xxx.com"
+host := "smtp.exmail.qq.com"
+password := "password"
+port := 465
+
+subject := "主题"
+content := "内容"
+contentType := "text/plain|text/html"
+attach := "附件路径" 或者 ""
+to := []string{"xxx@xxx.com", "xxx@xx.com"}
+cc := []string{"xxx@xxx.com", "xxx@xx.com"}
+
+message := hltool.NewEmailMessage(username, subject, contentType, content, attach, to, cc)
+email := hltool.NewEmailClient(host, username, password, port, message)
+ok, err := hltool.SendMessage(email)
+if err != nil {
+	log.Fatalf("发送邮件失败了: %s", err)
+}
+```
+
 # logrus Log库 示例
 ```go
 import (
@@ -43,6 +85,8 @@ import (
 )
 
 func main() {
+
+	// 数据库文件路径 表名
 	db, err := hltool.NewBoltDB("./data/app.db", "token")
 	if err != nil {
 		log.Fatalf("%s", err)
