@@ -1,6 +1,6 @@
 # hltool
 
-常用工具箱
+Go 开发常用工具库
 
 # 依赖
 
@@ -12,9 +12,8 @@ go get github.com/rifflock/lfshook
 go get gopkg.in/gomail.v2
 ```
 
-# Log 示例
+# logrus Log库 示例
 ```go
-
 import (
 	"github.com/chanyipiaomiao/hltool"
 )
@@ -35,7 +34,7 @@ func main() {
 {"level":"error","msg":"测试代码","time":"2018-02-06 21:42:13","username":"admin"}
 ```
 
-# DB 示例
+# BoltDB 嵌入式KV数据库 示例
 ```go
 import (
 	"log"
@@ -58,5 +57,4 @@ func main() {
 	}
 	log.Println(r)
 }
-
 ```
