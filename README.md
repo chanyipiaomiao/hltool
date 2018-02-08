@@ -12,7 +12,12 @@ go get github.com/rifflock/lfshook
 go get gopkg.in/gomail.v2
 ```
 
-# 发送钉钉通知 示例
+# 安装
+```go
+go get github.com/chanyipiaomiao/hltool
+```
+
+# 钉钉机器人通知 示例
 ```go
 import (
 	"log"
