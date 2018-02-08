@@ -19,9 +19,6 @@ type HLog struct {
 	// log 路径
 	LogPath string
 
-	// log文件名称
-	FileName string
-
 	// 日志类型  json|text 默认: json
 	LogType string
 
@@ -45,16 +42,19 @@ type HLog struct {
 }
 
 // NewHLog 返回HLog对象 和 error 目录创建失败
-func NewHLog(logpath, filename string) (*HLog, error) {
-	if !IsExist(logpath) {
-		err := os.MkdirAll(logpath, os.ModePerm)
+func NewHLog(logpath string) (*HLog, error) {
+	if logpath == "" {
+		return nil, fmt.Errorf("need log path")
+	}
+	logdir := path.Dir(logpath)
+	if !IsExist(logdir) {
+		err := os.MkdirAll(logdir, os.ModePerm)
 		if err != nil {
-			return nil, fmt.Errorf("create <%s> error: %s", logpath, err)
+			return nil, fmt.Errorf("create <%s> error: %s", logdir, err)
 		}
 	}
 	return &HLog{
 		LogPath:            logpath,
-		FileName:           filename,
 		LogType:            "json",
 		LogLevel:           log.InfoLevel,
 		FileNameDateFormat: "%Y-%m-%d",
@@ -140,12 +140,11 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 
 	logger.Level = hl.LogLevel
 
-	filename := path.Join(hl.LogPath, hl.FileName)
 	maxage := rotatelogs.WithMaxAge(hl.MaxAge)
 	rotate := rotatelogs.WithRotationTime(hl.RotationTime)
 
 	if hl.IsSeparateLevelLog {
-		debugFileName := filename + ".debug"
+		debugFileName := hl.LogPath + ".debug"
 		debugWriter, err := rotatelogs.New(
 			fmt.Sprintf("%s.%s", debugFileName, hl.FileNameDateFormat),
 			rotatelogs.WithLinkName(debugFileName),
@@ -156,7 +155,7 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 			return nil, err
 		}
 
-		infoFileName := filename + ".info"
+		infoFileName := hl.LogPath + ".info"
 		infoWriter, err := rotatelogs.New(
 			fmt.Sprintf("%s.%s", infoFileName, hl.FileNameDateFormat),
 			rotatelogs.WithLinkName(infoFileName),
@@ -167,7 +166,7 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 			return nil, err
 		}
 
-		warningFileName := filename + ".warn"
+		warningFileName := hl.LogPath + ".warn"
 		warningWriter, err := rotatelogs.New(
 			fmt.Sprintf("%s.%s", warningFileName, hl.FileNameDateFormat),
 			rotatelogs.WithLinkName(warningFileName),
@@ -178,7 +177,7 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 			return nil, err
 		}
 
-		errorFileName := filename + ".error"
+		errorFileName := hl.LogPath + ".error"
 		errorWriter, err := rotatelogs.New(
 			fmt.Sprintf("%s.%s", errorFileName, hl.FileNameDateFormat),
 			rotatelogs.WithLinkName(errorFileName),
@@ -204,7 +203,7 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 
 	} else {
 		writer, err := rotatelogs.New(
-			fmt.Sprintf("%s.%s", filename, hl.FileNameDateFormat),
+			fmt.Sprintf("%s.%s", hl.LogPath, hl.FileNameDateFormat),
 			maxage,
 			rotate,
 		)
