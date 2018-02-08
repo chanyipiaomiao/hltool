@@ -13,6 +13,48 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	logrusLogger *log.Logger
+)
+
+// HLogger hlogger
+type HLogger struct{}
+
+// logrusEntry 返回logrusEntry
+func (logger *HLogger) logrusEntry(commonFields map[string]interface{}) *log.Entry {
+	return logrusLogger.WithFields(log.Fields(commonFields))
+}
+
+// Debug Debug日志
+func (logger *HLogger) Debug(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Debugf("%s", message)
+}
+
+// Info Info日志
+func (logger *HLogger) Info(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Infof("%s", message)
+}
+
+// Warn Warn日志
+func (logger *HLogger) Warn(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Warnf("%s", message)
+}
+
+// Error Error日志
+func (logger *HLogger) Error(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Errorf("%s", message)
+}
+
+// Fatal Fatal日志
+func (logger *HLogger) Fatal(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Fatalf("%s", message)
+}
+
+// Panic Panic日志
+func (logger *HLogger) Panic(commonFields map[string]interface{}, message string) {
+	logger.logrusEntry(commonFields).Panicf("%s", message)
+}
+
 // HLog 定义
 type HLog struct {
 
@@ -121,24 +163,19 @@ func setNull() *bufio.Writer {
 	return bufio.NewWriter(src)
 }
 
-// GetLogField 返回log.Fields
-func (hl *HLog) GetLogField(fields map[string]interface{}) log.Fields {
-	return log.Fields(fields)
-}
-
 // GetLogger getlogger
-func (hl *HLog) GetLogger() (*log.Logger, error) {
+func (hl *HLog) GetLogger() (*HLogger, error) {
 
-	logger := log.New()
+	logrusLogger = log.New()
 
 	switch hl.LogType {
 	case "text":
-		logger.Formatter = &log.TextFormatter{TimestampFormat: hl.TimestampFormat}
+		logrusLogger.Formatter = &log.TextFormatter{TimestampFormat: hl.TimestampFormat}
 	default:
-		logger.Formatter = &log.JSONFormatter{TimestampFormat: hl.TimestampFormat}
+		logrusLogger.Formatter = &log.JSONFormatter{TimestampFormat: hl.TimestampFormat}
 	}
 
-	logger.Level = hl.LogLevel
+	logrusLogger.Level = hl.LogLevel
 
 	maxage := rotatelogs.WithMaxAge(hl.MaxAge)
 	rotate := rotatelogs.WithRotationTime(hl.RotationTime)
@@ -197,9 +234,9 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 			log.ErrorLevel: errorWriter,
 			log.FatalLevel: errorWriter,
 			log.PanicLevel: errorWriter,
-		}, logger.Formatter)
+		}, logrusLogger.Formatter)
 
-		logger.Hooks.Add(fileHook)
+		logrusLogger.Hooks.Add(fileHook)
 
 	} else {
 		writer, err := rotatelogs.New(
@@ -218,19 +255,19 @@ func (hl *HLog) GetLogger() (*log.Logger, error) {
 			log.ErrorLevel: writer,
 			log.FatalLevel: writer,
 			log.PanicLevel: writer,
-		}, logger.Formatter)
+		}, logrusLogger.Formatter)
 
-		logger.Hooks.Add(fileHook)
+		logrusLogger.Hooks.Add(fileHook)
 	}
 
 	if hl.LogLevel != log.DebugLevel {
 		if out := setNull(); out != nil {
-			logger.Out = setNull()
+			logrusLogger.Out = setNull()
 		} else {
-			logger.Out = os.Stdout
+			logrusLogger.Out = os.Stdout
 		}
 	}
 
-	return logger, nil
+	return &HLogger{}, nil
 
 }
