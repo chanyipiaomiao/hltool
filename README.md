@@ -63,7 +63,8 @@ import (
 )
 
 func main() {
-		commonFields := map[string]interface{}{
+	
+	commonFields := map[string]interface{}{
 		"name": "zhangsan",
 		"age":  "20",
 	}
