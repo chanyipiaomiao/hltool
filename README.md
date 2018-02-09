@@ -8,16 +8,6 @@ Go 开发常用工具库
 go get github.com/chanyipiaomiao/hltool
 ```
 
-# 手动安装依赖
-
-```go
-go get golang.org/x/crypto/scrypt
-go get github.com/sirupsen/logrus
-go get github.com/lestrrat/go-file-rotatelogs
-go get github.com/rifflock/lfshook
-go get gopkg.in/gomail.v2
-```
-
 # 钉钉机器人通知 示例
 ```go
 import (
