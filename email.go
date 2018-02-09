@@ -1,19 +1,20 @@
 package hltool
 
 import (
-	"gopkg.in/gomail.v2"
 	"crypto/tls"
+
+	"gopkg.in/gomail.v2"
 )
 
 // EmailMessage 内容
 type EmailMessage struct {
-	From 		string
-	To 			[]string
-	Cc  		[]string
-	Subject 	string
+	From        string
+	To          []string
+	Cc          []string
+	Subject     string
 	ContentType string
-	Content 	string
-	Attach 		string
+	Content     string
+	Attach      string
 }
 
 // NewEmailMessage 返回消息对象
@@ -23,46 +24,46 @@ type EmailMessage struct {
 // attach: 附件
 // to: 收件人
 // cc: 抄送人
-func NewEmailMessage(from, subject, contentType, content, attach string, to, cc []string) *EmailMessage{
+func NewEmailMessage(from, subject, contentType, content, attach string, to, cc []string) *EmailMessage {
 	return &EmailMessage{
-		From: from,
-		Subject: subject,
+		From:        from,
+		Subject:     subject,
 		ContentType: contentType,
-		Content: content,
-		To: to,
-		Cc: cc,
-		Attach: attach,
+		Content:     content,
+		To:          to,
+		Cc:          cc,
+		Attach:      attach,
 	}
 }
 
 // EmailClient 发送客户端
 type EmailClient struct {
-	Host 	string
-	Port	int
+	Host     string
+	Port     int
 	Username string
 	Password string
-	Message *EmailMessage
+	Message  *EmailMessage
 }
 
-// NewEmailClient 返回一个邮件客户端 
+// NewEmailClient 返回一个邮件客户端
 // host smtp地址
 // username 用户名
 // password 密码
 // port 端口
-func NewEmailClient(host, username, password string, port int, message *EmailMessage) *EmailClient{
+func NewEmailClient(host, username, password string, port int, message *EmailMessage) *EmailClient {
 	return &EmailClient{
-		Host: host,
-		Port: port,
+		Host:     host,
+		Port:     port,
 		Username: username,
 		Password: password,
-		Message: message,
+		Message:  message,
 	}
 }
 
 // SendMessage 发送邮件
 func (c *EmailClient) SendMessage() (bool, error) {
 
-	e := gomail.NewDialer(c.Host, c.Port, c.Username, c.Password)
+	e := gomail.NewPlainDialer(c.Host, c.Port, c.Username, c.Password)
 	if 587 == c.Port {
 		e.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
@@ -80,7 +81,7 @@ func (c *EmailClient) SendMessage() (bool, error) {
 	if c.Message.Attach != "" {
 		dm.Attach(c.Message.Attach)
 	}
-	
+
 	if err := e.DialAndSend(dm); err != nil {
 		return false, err
 	}
