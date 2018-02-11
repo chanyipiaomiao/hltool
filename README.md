@@ -4,9 +4,12 @@ Go 开发常用工具库
 
 
 # 安装
+
+使用golang官方 dep 管理依赖
 ```go
 go get github.com/chanyipiaomiao/hltool
 ```
+
 
 # 钉钉机器人通知 示例
 ```go
