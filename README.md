@@ -10,8 +10,14 @@ Go 开发常用工具库
 go get github.com/chanyipiaomiao/hltool
 ```
 
+# 功能列表
+- [钉钉机器人通知](#钉钉机器人通知)
+- [发送邮件](#发送邮件)
+- [JWT Token生成解析](#jwt-token生成解析)
+- [Log库](#log库)
+- [BoltDB嵌入式KV数据库](#boltdb嵌入式kv数据库)
 
-# 钉钉机器人通知 示例
+### 钉钉机器人通知
 ```go
 import (
 	"log"
@@ -25,8 +31,9 @@ if err != nil {
 }
 
 ```
+[返回到目录](#功能列表)
 
-# 发送邮件 示例
+### 发送邮件
 ```go
 import (
 	"log"
@@ -52,8 +59,52 @@ if err != nil {
 	log.Fatalf("发送邮件失败了: %s", err)
 }
 ```
+[返回到目录](#功能列表)
 
-# logrus Log库 示例
+### JWT Token生成解析
+```go
+import (
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+func main() {
+
+	// 签名字符串
+	sign := "fDEtrkpbQbocVxYRLZrnkrXDWJzRZMfO"
+
+	token := hltool.NewJWToken(sign)
+
+	// -----------  生成jwt token -----------
+	tokenString, err := token.GenJWToken(map[string]interface{}{
+		"name": "root",
+	})
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	fmt.Println(tokenString)
+
+	// -----------  解析 jwt token -----------
+	r, err := token.ParseJWToken(tokenString)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	fmt.Println(r)
+
+}
+
+```
+输出
+```shell
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicm9vdCJ9.NJMXxkzdBBWrNUO5u2oXFLU9FD18TWiXHqxM2msT1x0
+
+map[name:root]
+```
+[返回到目录](#功能列表)
+
+### Log库
 
 - 支持按天分割日志
 - 不同级别输出到不同文件
@@ -93,8 +144,9 @@ func main() {
 {"age":"20","level":"warning","msg":"测试Warn消息","name":"zhangsan","time":"2018-02-08 21:28:29"}
 {"age":"20","level":"error","msg":"测试Error消息","name":"zhangsan","time":"2018-02-08 21:28:29"}
 ```
+[返回到目录](#功能列表)
 
-# BoltDB 嵌入式KV数据库 示例
+### BoltDB嵌入式KV数据库
 ```go
 import (
 	"log"
@@ -120,3 +172,4 @@ func main() {
 	log.Println(r)
 }
 ```
+[返回到目录](#功能列表)
