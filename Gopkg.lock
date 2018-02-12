@@ -8,6 +8,12 @@
   version = "v1.3.1"
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
+  version = "v3.1.0"
+
+[[projects]]
   name = "github.com/lestrrat/go-file-rotatelogs"
   packages = ["."]
   revision = "9df8b44f21785240553882138c5df2e9cc1db910"
@@ -71,6 +77,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bdff86f0a75d99930fff2650adce04101240da6d403b02df6d188e0916572514"
+  inputs-digest = "585ad20de096dff4d424574f24ca45d95d48b3f1e27abf34f66bd899687cb177"
   solver-name = "gps-cdcl"
   solver-version = 1
