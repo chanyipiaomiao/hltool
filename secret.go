@@ -2,48 +2,52 @@ package hltool
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"math/rand"
-	"time"
 
 	"golang.org/x/crypto/scrypt"
 )
 
-var (
-	letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	special     = "!@#%$*.="
-	src         = rand.NewSource(time.Now().UnixNano())
-)
-
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
 // GenRandomString 生成随机字符串
-func GenRandomString(length int, specialchar string) string {
+// length 生成长度
+// specialChar 是否生成特殊字符
+func GenRandomString(length int, specialChar string) string {
 
-	if specialchar == "yes" {
+	letterBytes := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	special := "!@#%$*.="
+
+	if specialChar == "yes" {
 		letterBytes = letterBytes + special
 	}
 
-	b := make([]byte, length)
-	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := length-1, src.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = src.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
+	chars := []byte(letterBytes)
+
+	if length == 0 {
+		return ""
 	}
 
-	return string(b)
+	clen := len(chars)
+	maxrb := 255 - (256 % clen)
+	b := make([]byte, length)
+	r := make([]byte, length+(length/4)) // storage for random bytes.
+	i := 0
+	for {
+		if _, err := rand.Read(r); err != nil {
+			return ""
+		}
+		for _, rb := range r {
+			c := int(rb)
+			if c > maxrb {
+				continue // Skip this number to avoid modulo bias.
+			}
+			b[i] = chars[c%clen]
+			i++
+			if i == length {
+				return string(b)
+			}
+		}
+	}
 }
 
 // CryptPassword 加密密码
