@@ -17,8 +17,8 @@ go get github.com/chanyipiaomiao/hltool
 - [Log库](#log库)
 - [BoltDB嵌入式KV数据库](#boltdb嵌入式kv数据库)
 - [检测图片类型](#检测图片类型)
-- [图片转[ ]byte](#图片转byte数组)
-- [[ ]byte 转换为 png](#byte数组转换为png)
+- [图片转[]byte](#图片转byte数组)
+- [[]byte转换为png/jpg](#byte数组转换为png-jpg)
 
 ### 钉钉机器人通知
 ```go
@@ -227,7 +227,7 @@ func main() {
 
 [返回到目录](#功能列表)
 
-### byte数组转换为png
+### byte数组转换为png jpg
 ```go
 package main
 
@@ -239,11 +239,14 @@ import (
 
 func main() {
 
-	bytes, _ := hltool.ImageToBytes("1.png")
-
-	err := hltool.BytesToPng(bytes, "设置图片文件路径")
+	bytes, err := hltool.ImageToBytes("1.png")
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
+	}
+
+	err = hltool.BytesToImage(bytes, "111.png")
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 }

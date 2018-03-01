@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"net/http"
 	"os"
@@ -16,30 +17,50 @@ func ImageType(imgbytes []byte) string {
 	return http.DetectContentType(imgbytes)
 }
 
-// BytesToPng 字节生成png图片
-// imgbytes 图片字节数组
-// filepath 文件路径名称
-func BytesToPng(imgbytes []byte, filepath string) error {
-
-	if ImageType(imgbytes) != "image/png" {
-		return fmt.Errorf("it seem not a png image type")
-	}
+func decodeBytesCreateFile(imgbytes []byte, filepath string) (image.Image, *os.File, error) {
 	img, _, err := image.Decode(bytes.NewReader(imgbytes))
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	fd, err := os.Create(filepath)
 	if err != nil {
-		return err
+		return nil, nil, err
+	}
+	return img, fd, nil
+}
+
+// BytesToImage []byte生成图片
+// imgbytes 图片[]byte数组
+// filepath 文件路径名称
+func BytesToImage(imgbytes []byte, filepath string) error {
+
+	switch ImageType(imgbytes) {
+	case "image/png":
+		img, fd, err := decodeBytesCreateFile(imgbytes, filepath)
+		if err != nil {
+			return err
+		}
+		defer fd.Close()
+		err = png.Encode(fd, img)
+		if err != nil {
+			return err
+		}
+	case "image/jpeg":
+		img, fd, err := decodeBytesCreateFile(imgbytes, filepath)
+		if err != nil {
+			return err
+		}
+		defer fd.Close()
+		err = jpeg.Encode(fd, img, nil)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown image type")
 	}
 
-	err = png.Encode(fd, img)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return nil
 }
 
 // ImageToBytes 图片转换为字节数组
