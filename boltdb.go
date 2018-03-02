@@ -74,18 +74,21 @@ func (btb *BoltDB) Set(kv map[string][]byte) error {
 
 // Get 根据键名数组获取各自的值
 // keys 键名数组
-func (btb *BoltDB) Get(keys []string) (map[string]string, error) {
+func (btb *BoltDB) Get(keys []string) (map[string][]byte, error) {
 	err := btb.table()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	values := make(map[string]string)
+	values := make(map[string][]byte)
 	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(btb.TableName))
 		for _, k := range keys {
-			values[k] = string(b.Get([]byte(k)))
+			result := b.Get([]byte(k))
+			tmp := make([]byte, len(result))
+			copy(tmp, result)
+			values[k] = tmp
 		}
 		return nil
 	})
