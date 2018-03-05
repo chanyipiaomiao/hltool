@@ -115,3 +115,25 @@ func (btb *BoltDB) Delete(keys []string) error {
 		return err
 	})
 }
+
+// Backup 备份数据库文件
+func (btb *BoltDB) Backup(filepath string) error {
+	db, err := bolt.Open(btb.DBPath, 0600, nil)
+	if err != nil {
+		return fmt.Errorf("open db error: %s", err)
+	}
+
+	err = db.View(func(tx *bolt.Tx) error {
+		err := tx.CopyFile(filepath, 0644)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return db.Close()
+}
