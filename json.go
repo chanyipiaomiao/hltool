@@ -1,6 +1,7 @@
 package hltool
 
 import (
+	"encoding/json"
 	"os"
 )
 
@@ -21,4 +22,13 @@ func JSONFileToBytes(filepath string) ([]byte, error) {
 		return nil, err
 	}
 	return buf, nil
+}
+
+// JSONBytesToStruct json []byte 转换为 struct
+func JSONBytesToStruct(data []byte, structObj interface{}) error {
+	err := json.Unmarshal(data, structObj)
+	if err != nil {
+		return err
+	}
+	return nil
 }

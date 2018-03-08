@@ -19,6 +19,8 @@ go get github.com/chanyipiaomiao/hltool
 - [检测图片类型](#检测图片类型)
 - [图片转[]byte](#图片转byte数组)
 - [[]byte转换为png/jpg](#byte数组转换为png-jpg)
+- [json文件转换为byte数组](#json文件转换为byte数组)
+- [json []byte转换为struct](#json-byte数组转换为-struct)
 
 ### 钉钉机器人通知
 ```go
@@ -249,6 +251,82 @@ func main() {
 		log.Fatalln(err)
 	}
 
+}
+```
+
+[返回到目录](#功能列表)
+
+### json文件转换为byte数组
+
+json文件内容
+```sh
+{
+    "Name": "张三",
+    "Age": 20,
+    "Address": {
+        "Country": "China",
+        "Province": "Shanghai",
+        "City": "Shanghai"
+}
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+func main() {
+
+	b, err := hltool.JSONFileToBytes("/Users/helei/Desktop/test.json")
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+```
+
+[返回到目录](#功能列表)
+
+### json byte数组转换为 struct
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+type Person struct {
+	Name    string `json:"Name"`
+	Age     int    `json:"Age"`
+	Address struct {
+		Country  string `json:"Country"`
+		Province string `json:"Province"`
+		City     string `json:"City"`
+	} `json:"Address"`
+}
+
+func main() {
+
+	b, err := hltool.JSONFileToBytes("/Users/helei/Desktop/test.json")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	p := new(Person)
+	err = hltool.JSONBytesToStruct(b, p)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(p)
 }
 ```
 
