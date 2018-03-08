@@ -32,3 +32,12 @@ func JSONBytesToStruct(data []byte, structObj interface{}) error {
 	}
 	return nil
 }
+
+// JSONBytesToFile json []byte 写入文件
+func JSONBytesToFile(data []byte, filepath string) error {
+	err := BytesToFile(data, filepath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
