@@ -21,6 +21,8 @@ go get github.com/chanyipiaomiao/hltool
 - [[]byte转换为png/jpg](#byte数组转换为png-jpg)
 - [json文件转换为byte数组](#json文件转换为byte数组)
 - [json []byte转换为struct](#json-byte数组转换为-struct)
+- [struct序列化成二进制文件和反序列化](#struct序列化成二进制文件和反序列化)
+- [struct序列化成byte数组和反序列化](#struct序列化成byte数组和反序列化)
 
 ### 钉钉机器人通知
 ```go
@@ -282,6 +284,7 @@ import (
 
 func main() {
 
+	// 读取json文件转换为 []byte
 	b, err := hltool.JSONFileToBytes("/Users/helei/Desktop/test.json")
 	if err != nil {
 		log.Fatalln(err)
@@ -316,11 +319,13 @@ type Person struct {
 
 func main() {
 
+	// 读取json文件转换为 []byte
 	b, err := hltool.JSONFileToBytes("/Users/helei/Desktop/test.json")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	// json []byte转换为 struct
 	p := new(Person)
 	err = hltool.JSONBytesToStruct(b, p)
 	if err != nil {
@@ -328,6 +333,126 @@ func main() {
 	}
 	fmt.Println(p)
 }
+```
+
+### struct序列化成二进制文件和反序列化
+
+二进制文件可以存储到磁盘上，再次利用
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+// Person 人
+type Person struct {
+	Name    string 
+	Age     int    
+	Address struct {
+		Country  string 
+		Province string 
+		City     string 
+	} 
+}
+
+func main() {
+
+	p := &Person{
+		Name: "张三",
+		Age:  20,
+	}
+
+	p.Address.Country = "China"
+	p.Address.Province = "Shanghai"
+	p.Address.City = "Shanghai"
+
+	fmt.Println("序列化成二进制文件之前")
+	fmt.Println(p)
+
+	// 序列化成二级制文件，可以存储到磁盘上
+	err := hltool.StructToBinFile(p, "/tmp/p.bin")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// 反序列化
+	p2 := new(Person)
+	err = hltool.BinFileToStruct("/tmp/p.bin", p2)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("从二进制文件中转换之后")
+	fmt.Println(p2)
+
+}
+
+```
+
+[返回到目录](#功能列表)
+
+### struct序列化成byte数组和反序列化
+
+struct序列化成byte数组，可以存储到数据库中,再次利用
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+// Person 人
+type Person struct {
+	Name    string `json:"Name"`
+	Age     int    `json:"Age"`
+	Address struct {
+		Country  string `json:"Country"`
+		Province string `json:"Province"`
+		City     string `json:"City"`
+	} `json:"Address"`
+}
+
+func main() {
+
+	p := &Person{
+		Name: "张三",
+		Age:  20,
+	}
+
+	p.Address.Country = "China"
+	p.Address.Province = "Shanghai"
+	p.Address.City = "Shanghai"
+
+	fmt.Println("struct序列化成[]byte")
+
+	// struct序列化成[]byte，可以存储到数据库
+	b, err := hltool.StructToBytes(p)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(p)
+	fmt.Println(b)
+
+	// []byte反序列化成struct 和序列化之前的结构体结构必须要一样
+	fmt.Println("[]byte反序列化成struct")
+	p2 := new(Person)
+	err = hltool.BytesToStruct(b, p2)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(p2)
+
+}
+
 ```
 
 [返回到目录](#功能列表)
