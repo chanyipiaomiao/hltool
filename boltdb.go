@@ -86,6 +86,9 @@ func (btb *BoltDB) Get(keys []string) (map[string][]byte, error) {
 		b := tx.Bucket([]byte(btb.TableName))
 		for _, k := range keys {
 			result := b.Get([]byte(k))
+			if result == nil {
+				continue
+			}
 			tmp := make([]byte, len(result))
 			copy(tmp, result)
 			values[k] = tmp
