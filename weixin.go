@@ -43,37 +43,35 @@ const (
 
 // WeixinText 文本消息
 type WeixinText struct {
-	Content map[string]interface{}
+	Content string `json:"content"`
 }
 
 // NewWeixinText new 文本消息,
 // content  文本内容
 func NewWeixinText(content string) *WeixinText {
 	return &WeixinText{
-		Content: map[string]interface{}{
-			"content": content,
-		},
+		Content: content,
 	}
 }
 
 // WeixinImageVoiceFile 图片语音文件消息 统一用这个
 type WeixinImageVoiceFile struct {
-	MediaID map[string]interface{}
+	MediaID string `json:"media_id"`
 }
 
 // NewWeixinImageVoiceFile new 图片音频文件消息,
 // mediaID 图片媒体文件id，可以调用上传临时素材接口获取
 func NewWeixinImageVoiceFile(mediaID string) *WeixinImageVoiceFile {
 	return &WeixinImageVoiceFile{
-		MediaID: map[string]interface{}{
-			"media_id": mediaID,
-		},
+		MediaID: mediaID,
 	}
 }
 
 // WeixinVideo 视频消息
 type WeixinVideo struct {
-	Video map[string]interface{}
+	MediaID     string `json:"media_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 // NewWeixinVideo new 视频消息,
@@ -82,17 +80,18 @@ type WeixinVideo struct {
 // desc 视频消息的描述
 func NewWeixinVideo(mediaID, title, desc string) *WeixinVideo {
 	return &WeixinVideo{
-		Video: map[string]interface{}{
-			"media_id":    mediaID,
-			"title":       title,
-			"description": desc,
-		},
+		MediaID:     mediaID,
+		Title:       title,
+		Description: desc,
 	}
 }
 
 // WeixinTextCard 文本卡片消息
 type WeixinTextCard struct {
-	Textcard map[string]interface{}
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+	BtnTxt      string `json:"btntxt"`
 }
 
 // NewWeixinTextCard new文本卡片消息,
@@ -102,18 +101,24 @@ type WeixinTextCard struct {
 // btntxt 按钮文字。 默认为“详情”， 不超过4个文字，超过自动截断
 func NewWeixinTextCard(title, desc, url, btntxt string) *WeixinTextCard {
 	return &WeixinTextCard{
-		Textcard: map[string]interface{}{
-			"title":       title,
-			"description": desc,
-			"url":         url,
-			"btntxt":      btntxt,
-		},
+		Title:       title,
+		Description: desc,
+		URL:         url,
+		BtnTxt:      btntxt,
 	}
+}
+
+type weixinNews struct {
+	Btntxt      string `json:"btntxt"`
+	Description string `json:"description"`
+	Picurl      string `json:"picurl"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
 }
 
 // WeixinNews 图文消息
 type WeixinNews struct {
-	Articles []map[string]interface{}
+	Articles []weixinNews `json:"articles"`
 }
 
 // NewWeixinNews new 图文消息
@@ -124,22 +129,29 @@ type WeixinNews struct {
 // picurl 图文消息的图片链接，支持JPG、PNG格式，较好的效果为大图640320，小图8080。
 func NewWeixinNews(title, desc, url, picurl, btntxt string) *WeixinNews {
 	return &WeixinNews{
-		Articles: []map[string]interface{}{
-			map[string]interface{}{
-				"title":       title,
-				"description": desc,
-				"url":         url,
-				"picurl":      picurl,
-				"btntxt":      btntxt,
-			},
-		},
+		Articles: []weixinNews{weixinNews{
+			Title:       title,
+			Description: desc,
+			URL:         url,
+			Picurl:      picurl,
+			Btntxt:      btntxt,
+		}},
 	}
+}
+
+type weixinMPNews struct {
+	Title            string `json:"title"`
+	ThumbMediaID     string `json:"thumb_media_id"`
+	Author           string `json:"author"`
+	ContentSourceURL string `json:"content_source_url"`
+	Content          string `json:"content"`
+	Digest           string `json:"digest"`
 }
 
 // WeixinMPNews 图文消息 跟普通的图文消息一致，唯一的差异是图文内容存储在企业微信
 // 多次发送mpnews，会被认为是不同的图文，阅读、点赞的统计会被分开计算
 type WeixinMPNews struct {
-	Articles []map[string]interface{}
+	Articles []weixinMPNews `json:"articles"`
 }
 
 // NewWeixinMPNews new new 图文消息
@@ -151,16 +163,14 @@ type WeixinMPNews struct {
 // digest 图文消息的描述
 func NewWeixinMPNews(title, thumbMediaID, author, contentSourceURL, content, digest string) *WeixinMPNews {
 	return &WeixinMPNews{
-		Articles: []map[string]interface{}{
-			map[string]interface{}{
-				"title":              title,
-				"thumb_media_id":     thumbMediaID,
-				"author":             author,
-				"content_source_url": contentSourceURL,
-				"content":            content,
-				"digest":             digest,
-			},
-		},
+		Articles: []weixinMPNews{weixinMPNews{
+			Title:            title,
+			ThumbMediaID:     thumbMediaID,
+			Author:           author,
+			ContentSourceURL: contentSourceURL,
+			Content:          content,
+			Digest:           digest,
+		}},
 	}
 }
 
@@ -178,8 +188,8 @@ type WeixinMessage struct {
 	File     *WeixinImageVoiceFile `json:"file"`
 	Video    *WeixinVideo          `json:"video"`
 	TextCard *WeixinTextCard       `json:"textcard"`
-	News     *WeixinNews           `json:"news"`
-	MPNews   *WeixinMPNews         `json:"mpnews"`
+	News     []WeixinNews          `json:"news"`
+	MPNews   []WeixinMPNews        `json:"mpnews"`
 }
 
 // NewWeixinMessage new 消息对象
@@ -209,9 +219,9 @@ func NewWeixinMessage(msgtype, toUser, toParty, toTag string, agentID, safe int6
 	case *WeixinTextCard:
 		msg.TextCard = message.(*WeixinTextCard)
 	case *WeixinNews:
-		msg.News = message.(*WeixinNews)
+		msg.News = []WeixinNews{message.(WeixinNews)}
 	case *WeixinMPNews:
-		msg.MPNews = message.(*WeixinMPNews)
+		msg.MPNews = []WeixinMPNews{message.(WeixinMPNews)}
 	default:
 		return nil
 	}
