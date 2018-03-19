@@ -1,6 +1,7 @@
 package hltool
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/levigross/grequests"
@@ -108,7 +109,8 @@ func NewWeixinTextCard(title, desc, url, btntxt string) *WeixinTextCard {
 	}
 }
 
-type weixinNews struct {
+// WeixinNew 单个图文消息
+type WeixinNew struct {
 	Btntxt      string `json:"btntxt"`
 	Description string `json:"description"`
 	Picurl      string `json:"picurl"`
@@ -118,7 +120,7 @@ type weixinNews struct {
 
 // WeixinNews 图文消息
 type WeixinNews struct {
-	Articles []weixinNews `json:"articles"`
+	Articles []WeixinNew `json:"articles"`
 }
 
 // NewWeixinNews new 图文消息
@@ -129,7 +131,7 @@ type WeixinNews struct {
 // picurl 图文消息的图片链接，支持JPG、PNG格式，较好的效果为大图640320，小图8080。
 func NewWeixinNews(title, desc, url, picurl, btntxt string) *WeixinNews {
 	return &WeixinNews{
-		Articles: []weixinNews{weixinNews{
+		Articles: []WeixinNew{WeixinNew{
 			Title:       title,
 			Description: desc,
 			URL:         url,
@@ -139,7 +141,8 @@ func NewWeixinNews(title, desc, url, picurl, btntxt string) *WeixinNews {
 	}
 }
 
-type weixinMPNews struct {
+// WeixinMPNew 单个图文消息
+type WeixinMPNew struct {
 	Title            string `json:"title"`
 	ThumbMediaID     string `json:"thumb_media_id"`
 	Author           string `json:"author"`
@@ -151,7 +154,7 @@ type weixinMPNews struct {
 // WeixinMPNews 图文消息 跟普通的图文消息一致，唯一的差异是图文内容存储在企业微信
 // 多次发送mpnews，会被认为是不同的图文，阅读、点赞的统计会被分开计算
 type WeixinMPNews struct {
-	Articles []weixinMPNews `json:"articles"`
+	Articles []WeixinMPNew `json:"articles"`
 }
 
 // NewWeixinMPNews new new 图文消息
@@ -163,7 +166,7 @@ type WeixinMPNews struct {
 // digest 图文消息的描述
 func NewWeixinMPNews(title, thumbMediaID, author, contentSourceURL, content, digest string) *WeixinMPNews {
 	return &WeixinMPNews{
-		Articles: []weixinMPNews{weixinMPNews{
+		Articles: []WeixinMPNew{WeixinMPNew{
 			Title:            title,
 			ThumbMediaID:     thumbMediaID,
 			Author:           author,
@@ -193,12 +196,9 @@ type WeixinMessage struct {
 }
 
 // NewWeixinMessage new 消息对象
-func NewWeixinMessage(msgtype, toUser, toParty, toTag string, agentID, safe int64, message interface{}) *WeixinMessage {
+func NewWeixinMessage(msgtype string, agentID, safe int64, message interface{}) *WeixinMessage {
 	msg := &WeixinMessage{
 		MsgType: msgtype,
-		ToUser:  toUser,
-		ToParty: toParty,
-		ToTag:   toTag,
 		AgentID: agentID,
 		Safe:    safe,
 	}
@@ -230,19 +230,20 @@ func NewWeixinMessage(msgtype, toUser, toParty, toTag string, agentID, safe int6
 
 // WeixinClient 微信
 type WeixinClient struct {
-	API string
+	APIURL      string
+	AccessToken string
+	Message     *WeixinMessage
 }
 
 // NewWeixinClient new weixin对象
-func NewWeixinClient(api string) *WeixinClient {
-	return &WeixinClient{
-		API: api,
-	}
+func NewWeixinClient() *WeixinClient {
+	return &WeixinClient{}
 }
 
 // GetAccessToken 获取AccessToken
+// corpid 每个企业都拥有唯一的corpid，获取此信息可在管理后台“我的企业”－“企业信息”下查看（需要有管理员权限）
+// corpsecret 每个应用有独立的secret，所以每个应用的access_token应该分开来获取 在管理后台->“企业应用”->点进应用
 func (w *WeixinClient) GetAccessToken(corpid, corpsecret string) (string, error) {
-	api := w.API + "/gettoken"
 
 	o := &grequests.RequestOptions{
 		Params: map[string]string{
@@ -251,7 +252,7 @@ func (w *WeixinClient) GetAccessToken(corpid, corpsecret string) (string, error)
 		},
 	}
 
-	resp, err := grequests.Get(api, o)
+	resp, err := grequests.Get(w.APIURL, o)
 	if err != nil {
 		return "", err
 	}
@@ -267,6 +268,27 @@ func (w *WeixinClient) GetAccessToken(corpid, corpsecret string) (string, error)
 
 // SendMessage 发送消息
 func (w *WeixinClient) SendMessage() (bool, error) {
-
-	return false, nil
+	reqJSON, err := json.Marshal(w.Message)
+	if err != nil {
+		return false, err
+	}
+	o := &grequests.RequestOptions{
+		Params: map[string]string{
+			"access_token": w.AccessToken,
+		},
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		JSON: reqJSON,
+	}
+	resp, err := grequests.Post(w.APIURL, o)
+	if err != nil {
+		return false, err
+	}
+	respJSON := resp.String()
+	errcode := gjson.Get(respJSON, "errcode")
+	if errcode.Int() != 0 {
+		return false, WeixinErr(errcode.Int(), gjson.Get(respJSON, "errmsg").String())
+	}
+	return true, nil
 }
