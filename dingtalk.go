@@ -1,46 +1,36 @@
 package hltool
 
 import (
-	"fmt"
-	"net/http"
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
 // DingTalkMessage 消息
 type DingTalkMessage struct {
-	Message string  //消息
-	Type 	string  // 消息类型
+	Message string //消息
+	Title   string // markdown标题
+	Type    string // 消息类型
 }
 
-// DingTalkClient 通过钉钉机器人发送消息 
+// DingTalkClient 通过钉钉机器人发送消息
 type DingTalkClient struct {
 	RobotURL string
-	Message *DingTalkMessage
-}
-
-// NewDingTalkClient 返回一个 dingtalk对象
-func NewDingTalkClient(robotURL, message, contentType string)*DingTalkClient{
-	return &DingTalkClient{
-		RobotURL: robotURL,
-		Message: &DingTalkMessage{
-			Message: message,
-			Type: contentType,
-		},
-	}
+	Message  *DingTalkMessage
 }
 
 // SendMessage 通过钉钉机器人发送消息
-func (d *DingTalkClient) SendMessage() (bool, error){
-	
-	var message string;
+func (d *DingTalkClient) SendMessage() (bool, error) {
+
+	var message string
 	switch d.Message.Type {
 	case "text":
 		message = fmt.Sprintf(`{"msgtype": "text","text": {"content": "%s"}}`, d.Message.Message)
 	case "markdown":
 		message = fmt.Sprintf(`{"msgtype": "markdown","markdown": 
-							   {"title": "devops通知", "text": "%s"}
-							   }`, d.Message.Message)
+							   {"title": %s, "text": "%s"}
+							   }`, d.Message.Title, d.Message.Message)
 	default:
 		message = fmt.Sprintf(`{"msgtype": "text","text": {"content": "%s"}}`, d.Message.Message)
 	}
