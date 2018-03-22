@@ -28,14 +28,13 @@ func (d *DingTalkClient) SendMessage() (bool, error) {
 	case "text":
 		message = fmt.Sprintf(`{"msgtype": "text","text": {"content": "%s"}}`, d.Message.Message)
 	case "markdown":
-		message = fmt.Sprintf(`{"msgtype": "markdown","markdown": 
-							   {"title": %s, "text": "%s"}
-							   }`, d.Message.Title, d.Message.Message)
+		message = fmt.Sprintf(`{"msgtype": "markdown","markdown":{"title": "%s", "text": "%s"}}`, d.Message.Title, d.Message.Message)
 	default:
 		message = fmt.Sprintf(`{"msgtype": "text","text": {"content": "%s"}}`, d.Message.Message)
 	}
 
 	client := &http.Client{}
+	fmt.Println(message)
 	request, _ := http.NewRequest("POST", d.RobotURL, bytes.NewBuffer([]byte(message)))
 	request.Header.Set("Content-type", "application/json")
 	response, err := client.Do(request)
