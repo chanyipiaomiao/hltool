@@ -181,38 +181,37 @@ func NewGoRSA(pubKeyFilename, priKeyFilename string) (*GoRSA, error) {
 }
 
 // PublicEncrypt 公钥加密
-func (r *GoRSA) PublicEncrypt(data string) (string, error) {
+func (r *GoRSA) PublicEncrypt(data []byte) ([]byte, error) {
 	partLen := r.PublicKey.N.BitLen()/8 - 11
-	chunks := split([]byte(data), partLen)
+	chunks := split(data, partLen)
 	buffer := bytes.NewBufferString("")
 
 	for _, chunk := range chunks {
 		bytes, err := rsa.EncryptPKCS1v15(rand.Reader, r.PublicKey, chunk)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		buffer.Write(bytes)
 	}
-	return base64.RawURLEncoding.EncodeToString(buffer.Bytes()), nil
 
+	return buffer.Bytes(), nil
 }
 
 // PrivateDecrypt 私钥解密
-func (r *GoRSA) PrivateDecrypt(encrypted string) (string, error) {
+func (r *GoRSA) PrivateDecrypt(encrypted []byte) ([]byte, error) {
 
 	partLen := r.PublicKey.N.BitLen() / 8
-	raw, err := base64.RawURLEncoding.DecodeString(encrypted)
-	chunks := split([]byte(raw), partLen)
+	chunks := split(encrypted, partLen)
 	buffer := bytes.NewBufferString("")
 
 	for _, chunk := range chunks {
 		decrypted, err := rsa.DecryptPKCS1v15(rand.Reader, r.PrivateKey, chunk)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		buffer.Write(decrypted)
 	}
-	return buffer.String(), err
+	return buffer.Bytes(), nil
 }
 
 // Sign 数据进行签名
