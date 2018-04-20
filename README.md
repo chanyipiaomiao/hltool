@@ -11,6 +11,7 @@ go get github.com/chanyipiaomiao/hltool
 ```
 
 # 功能列表
+- [RSA加密解密字符串](#rsa加密解密字符串)
 - [钉钉机器人通知](#钉钉机器人通知)
 - [发送邮件](#发送邮件)
 - [JWT Token生成解析](#jwt-token生成解析)
@@ -23,6 +24,57 @@ go get github.com/chanyipiaomiao/hltool
 - [json []byte转换为struct](#json-byte数组转换为-struct)
 - [struct序列化成二进制文件和反序列化](#struct序列化成二进制文件和反序列化)
 - [struct序列化成byte数组和反序列化](#struct序列化成byte数组和反序列化)
+
+### RSA加密解密字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"github.com/chanyipiaomiao/hltool"
+)
+func main() {
+
+	// 生成 2048 位密钥对文件 指定名称
+	err := hltool.NewRSAFile("id_rsa.pub", "id_rsa", 2048)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// 生成密钥对字符串
+	// pub, pri, err := hltool.NewRSAString(2048)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// fmt.Println(pub)
+	// fmt.Println(pri)
+
+	// 指定 公钥文件名 和 私钥文件名
+	gorsa, err := hltool.NewGoRSA("id_rsa.pub", "id_rsa")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// 明文字符
+	rawStr := "O8Hp8WQbFPT7b5AUsEMVLtIU3MVYOrt8"
+
+	// 使用公钥加密
+	encrypt, err := gorsa.PublicEncrypt([]byte(rawStr))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// 使用私钥解密
+	decrypt, err := gorsa.PrivateDecrypt(encrypt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(decrypt))
+}
+```
+[返回到目录](#功能列表)
 
 ### 钉钉机器人通知
 ```go
