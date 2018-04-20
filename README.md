@@ -11,7 +11,8 @@ go get github.com/chanyipiaomiao/hltool
 ```
 
 # 功能列表
-- [RSA加密解密字符串](#rsa加密解密字符串)
+- [AES加密解密](#aes加密解密)
+- [RSA加密解密](#rsa加密解密)
 - [钉钉机器人通知](#钉钉机器人通知)
 - [发送邮件](#发送邮件)
 - [JWT Token生成解析](#jwt-token生成解析)
@@ -25,7 +26,46 @@ go get github.com/chanyipiaomiao/hltool
 - [struct序列化成二进制文件和反序列化](#struct序列化成二进制文件和反序列化)
 - [struct序列化成byte数组和反序列化](#struct序列化成byte数组和反序列化)
 
-### RSA加密解密字符串
+### AES加密解密
+
+```go
+package main
+
+import (
+	"encoding/base64"
+	"fmt"
+	"log"
+
+	"github.com/chanyipiaomiao/hltool"
+)
+
+func main() {
+
+	// AES 加解密 指定加密的密码
+	goaes := hltool.NewGoAES([]byte("O8Hp8WQbFPT7b5AUsEMVLtIU3MVYOrt8"))
+
+	// 加密数据
+	encrypt, err := goaes.Encrypt([]byte("123456"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(base64.StdEncoding.EncodeToString(encrypt))
+
+	// 解密数据
+	decrypt, err := goaes.Decrypt(encrypt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(decrypt))
+
+}
+
+```
+
+[返回到目录](#功能列表)
+
+### RSA加密解密
 
 ```go
 package main
