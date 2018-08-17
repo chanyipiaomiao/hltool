@@ -7,6 +7,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base32"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -56,16 +57,16 @@ func oneTimePassword(key []byte, value []byte) uint32 {
 
 // GenByKey 根据提供的 secret 来生成6位数字
 // 返回 6位数字、剩余时间
-func TwoStepAuthGenByKey(secret string) (uint32, int64, error) {
+func TwoStepAuthGenByKey(secret string) (string, int64, error) {
 	inputNoSpaces := strings.Replace(secret, " ", "", -1)
 	inputNoSpacesUpper := strings.ToUpper(inputNoSpaces)
 	decodeKey, err := base32.StdEncoding.DecodeString(inputNoSpacesUpper)
 	if err != nil {
-		return 0, 0, err
+		return "", 0, err
 	}
 	// generate a one-time password using the time at 30-second intervals
 	epochSeconds := time.Now().Unix()
 	pwd := oneTimePassword(decodeKey, toBytes(epochSeconds/30))
 	secondsRemaining := 30 - (epochSeconds % 30)
-	return pwd, secondsRemaining, nil
+	return fmt.Sprintf("%06d", pwd), secondsRemaining, nil
 }

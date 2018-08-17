@@ -11,6 +11,7 @@ go get github.com/chanyipiaomiao/hltool
 ```
 
 # 功能列表
+- [2步验证客户端](#2步验证客户端)
 - [AES加密解密](#aes加密解密)
 - [RSA加密解密](#rsa加密解密)
 - [钉钉机器人通知](#钉钉机器人通知)
@@ -25,6 +26,25 @@ go get github.com/chanyipiaomiao/hltool
 - [json []byte转换为struct](#json-byte数组转换为-struct)
 - [struct序列化成二进制文件和反序列化](#struct序列化成二进制文件和反序列化)
 - [struct序列化成byte数组和反序列化](#struct序列化成byte数组和反序列化)
+
+
+### 2步验证客户端
+
+模拟Google Authenticator验证器命令行客户端
+
+```go
+import (
+    "github.com/chanyipiaomiao/hltool"
+    "fmt"
+)
+
+func main() {
+    key := "xxxxxxxx" // 服务端生成的secret 一般跟二维码一起
+    n, t, _ := hltool.TwoStepAuthGenByKey(key)
+    // n 生成的6位数字 t 所剩余的时间
+    fmt.Printf("%s %s %d\n", key, n, t)
+}
+```
 
 ### AES加密解密
 
