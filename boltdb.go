@@ -98,6 +98,32 @@ func (btb *BoltDB) Get(keys []string) (map[string][]byte, error) {
 	return values, err
 }
 
+// GetAll 获取全部
+func (btb *BoltDB) GetAll() (map[string][]byte, error) {
+	err := btb.table()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	values := make(map[string][]byte)
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(btb.TableName))
+		b.ForEach(func(k, v []byte) error {
+			tmpV := make([]byte, len(v))
+			copy(tmpV, v)
+
+			tmpK := make([]byte, len(k))
+			copy(tmpK, k)
+			values[string(tmpK)] = tmpV
+			return nil
+		})
+		return nil
+	})
+	return values, nil
+}
+
 // Delete 删除键值
 func (btb *BoltDB) Delete(keys []string) error {
 	err := btb.table()
