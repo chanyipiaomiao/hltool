@@ -39,10 +39,16 @@ import (
 )
 
 func main() {
-    key := "xxxxxxxx" // 服务端生成的secret 一般跟二维码一起
-    n, t, _ := hltool.TwoStepAuthGenByKey(key)
-    // n 生成的6位数字 t 所剩余的时间
-    fmt.Printf("%s %s %d\n", key, n, t)
+    totp := &hltool.TOTP{
+        SecretKey: "xxxxxxxxxxx",
+        Algorithm: "SHA1",
+        Name: "HeHe",
+    }
+    n, t, err := hltool.TwoStepAuthGenNumber(totp)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("%s %s %d\n", totp.Name, n, t)
 }
 ```
 
