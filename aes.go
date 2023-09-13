@@ -40,6 +40,8 @@ func NewAES(key []byte, opt *AesOption) *GoAES {
 	a := &GoAES{Key: key}
 	if opt == nil {
 		a.opt = &AesOption{Mode: "cbc"}
+	} else {
+		a.opt = opt
 	}
 	return a
 }
