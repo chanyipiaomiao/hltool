@@ -21,12 +21,12 @@ func pKCS7UnPadding(origData []byte) []byte {
 
 // GoAES 加密
 type GoAES struct {
-	opt *Option
+	opt *AesOption
 
 	Key []byte
 }
 
-type Option struct {
+type AesOption struct {
 	Mode string // ecb, cbc
 }
 
@@ -36,10 +36,10 @@ func NewGoAES(key []byte) *GoAES {
 }
 
 // NewGoAES 返回GoAES
-func New(key []byte, opt *Option) *GoAES {
+func NewAES(key []byte, opt *AesOption) *GoAES {
 	a := &GoAES{Key: key}
 	if opt == nil {
-		a.opt = &Option{Mode: "cbc"}
+		a.opt = &AesOption{Mode: "cbc"}
 	}
 	return a
 }
