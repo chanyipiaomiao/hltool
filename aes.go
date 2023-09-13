@@ -70,9 +70,17 @@ func (a *GoAES) EncryptV2(origData []byte) ([]byte, error) {
 		blockSize := block.BlockSize()
 		origData = pKCS7Padding(origData, blockSize)
 		crypted := make([]byte, len(origData))
-		block.Encrypt(crypted, origData[:blockSize])
-		origData = origData[blockSize:]
-		crypted = crypted[blockSize:]
+		if len(origData)%blockSize != 0 {
+			return nil, errors.New("crypto/cipher: input not full blocks")
+		}
+		if len(crypted) < len(origData) {
+			return nil, errors.New("crypto/cipher: output smaller than input")
+		}
+		for len(origData) > 0 {
+			block.Encrypt(crypted, origData[:blockSize])
+			origData = origData[blockSize:]
+			crypted = crypted[blockSize:]
+		}
 		return crypted, nil
 	case "cbc":
 		return a.Encrypt(origData)
@@ -103,11 +111,16 @@ func (a *GoAES) DecryptV2(crypted []byte) ([]byte, error) {
 			return nil, err
 		}
 		blockSize := block.BlockSize()
-
-		block.Decrypt(origData, crypted[:blockSize])
-		crypted = crypted[blockSize:]
-		origData = origData[blockSize:]
-		origData = pKCS7UnPadding(origData)
+		if len(crypted)%blockSize != 0 {
+			return nil, errors.New("crypto/cipher: input not full blocks")
+		}
+		if len(origData) < len(crypted) {
+			return nil, errors.New("crypto/cipher: output smaller than input")
+		}
+		for len(crypted) > 0 {
+			block.Decrypt(origData, crypted[:blockSize])
+			origData = pKCS7UnPadding(origData)
+		}
 		return origData, nil
 	case "cbc":
 		return a.Decrypt(crypted)
