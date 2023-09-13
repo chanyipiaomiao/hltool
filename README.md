@@ -7,7 +7,7 @@ Go 开发常用工具库
 
 使用golang官方 dep 管理依赖
 ```go
-go get github.com/chanyipiaomiao/hltool
+go get github.com/zyfdegh/hltool
 ```
 
 # 功能列表
@@ -34,7 +34,7 @@ go get github.com/chanyipiaomiao/hltool
 
 ```go
 import (
-    "github.com/chanyipiaomiao/hltool"
+    "github.com/zyfdegh/hltool"
     "fmt"
 )
 
@@ -64,7 +64,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -101,7 +101,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 func main() {
 
@@ -148,7 +148,7 @@ func main() {
 ```go
 import (
 	"log"
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 dingtalk := hltool.NewDingTalkClient("钉钉机器URL", "消息内容", "text|markdown")
@@ -164,7 +164,7 @@ if err != nil {
 ```go
 import (
 	"log"
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 username := "xxxx@xxx.com"
@@ -194,7 +194,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -240,7 +240,7 @@ map[name:root]
 
 ```go
 import (
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -278,7 +278,7 @@ func main() {
 import (
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -310,7 +310,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -336,7 +336,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -358,7 +358,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -399,7 +399,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 func main() {
@@ -424,7 +424,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 type Person struct {
@@ -466,7 +466,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 // Person 人
@@ -527,7 +527,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanyipiaomiao/hltool"
+	"github.com/zyfdegh/hltool"
 )
 
 // Person 人
