@@ -76,10 +76,12 @@ func (a *GoAES) EncryptV2(origData []byte) ([]byte, error) {
 		if len(crypted) < len(origData) {
 			return nil, errors.New("crypto/cipher: output smaller than input")
 		}
-		for len(origData) > 0 {
-			block.Encrypt(crypted, origData[:blockSize])
-			origData = origData[blockSize:]
-			crypted = crypted[blockSize:]
+		// 拷贝 slice 结构，底层数组空间不变
+		dst, src := crypted, origData
+		for len(src) > 0 {
+			block.Encrypt(dst, src[:blockSize])
+			src = src[blockSize:]
+			dst = dst[blockSize:]
 		}
 		return crypted, nil
 	case "cbc":
@@ -117,11 +119,14 @@ func (a *GoAES) DecryptV2(crypted []byte) ([]byte, error) {
 		if len(origData) < len(crypted) {
 			return nil, errors.New("crypto/cipher: output smaller than input")
 		}
-		for len(crypted) > 0 {
-			block.Decrypt(origData, crypted[:blockSize])
-			origData = pKCS7UnPadding(origData)
+		// 拷贝 slice 结构，底层数组空间不变
+		src, dst := crypted, origData
+		for len(src) > 0 {
+			block.Decrypt(dst, src[:blockSize])
+			src = src[blockSize:]
+			dst = dst[blockSize:]
 		}
-		return origData, nil
+		return pKCS7UnPadding(origData), nil
 	case "cbc":
 		return a.Decrypt(crypted)
 	}
